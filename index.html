@@ -1,459 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Countdown Timer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Letter Wheel</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0a0c10;
-      --panel: #111520;
-      --border: #1e2a3a;
-      --accent: #00e5ff;
-      --accent2: #ff4081;
-      --green: #00e676;
-      --amber: #ffab00;
-      --text: #cdd9e5;
-      --dim: #4a5a6a;
-      --glow: 0 0 18px rgba(0,229,255,0.35);
-      --glow2: 0 0 18px rgba(255,64,129,0.4);
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: var(--bg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Rajdhani', sans-serif;
-      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff;
+      color: #000;
+      height: 100vh;
       overflow: hidden;
-    }
-
-    /* Animated grid background */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .container {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 28px;
-    }
-
-    .label {
-      font-size: 11px;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--dim);
-      font-weight: 500;
-    }
-
-    /* SVG Ring */
-    .ring-wrap {
-      position: relative;
-      width: 380px;
-      height: 380px;
-    }
-
-    .ring-wrap svg {
-      transform: rotate(-90deg);
-    }
-
-    .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
-    .ring-progress {
-      fill: none;
-      stroke: var(--accent);
-      stroke-width: 8;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
-      filter: drop-shadow(0 0 8px rgba(0,229,255,0.7));
-    }
-
-    .display {
-      position: absolute;
-      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      user-select: none;
     }
 
-    .time-text {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 86px;
-      letter-spacing: 0.04em;
-      color: var(--accent);
-      text-shadow: var(--glow);
-      transition: color 0.3s;
-      line-height: 1;
+    #word-container {
+      display: flex;
+      gap: 0.05em;
+      align-items: center;
+      justify-content: center;
     }
 
-    .time-text.running { color: var(--green); text-shadow: 0 0 18px rgba(0,230,118,0.5); }
-    .time-text.paused  { color: var(--amber); text-shadow: 0 0 18px rgba(255,171,0,0.5); }
-    .time-text.done    { color: var(--accent2); text-shadow: var(--glow2); }
-    .time-text.stopped { color: var(--accent2); text-shadow: var(--glow2); }
-
-    .status-badge {
-      font-size: 10px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--dim);
-      transition: color 0.3s;
-    }
-    .status-badge.running { color: var(--green); }
-    .status-badge.paused  { color: var(--amber); }
-    .status-badge.done    { color: var(--accent2); }
-    .status-badge.stopped { color: var(--accent2); }
-
-    /* Adjust panel */
-    .adjust-panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px 32px;
-      width: 280px;
-    }
-
-    .adjust-group {
+    .letter-col {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
     }
 
-    .adjust-label {
-      font-size: 10px;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--dim);
-    }
-
-    .adjust-row {
+    .btn-zone {
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-
-    .adj-btn {
-      width: 32px; height: 32px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--accent);
-      font-size: 18px;
-      font-family: 'Share Tech Mono', monospace;
+      justify-content: center;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
-      display: flex; align-items: center; justify-content: center;
+      color: #bbb;
+      line-height: 1;
+      transition: color 0.1s;
+    }
+    .btn-zone:hover { color: #000; }
+
+    .letter-display {
+      font-weight: bold;
       line-height: 1;
     }
 
-    .adj-btn:hover {
-      background: rgba(0,229,255,0.1);
-      border-color: var(--accent);
-    }
-    .adj-btn:active { transform: scale(0.92); }
-
-    .adj-val {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 20px;
-      color: var(--text);
-      min-width: 28px;
-      text-align: center;
-    }
-
-    /* Control buttons */
-    .controls {
-      display: flex;
-      gap: 12px;
-    }
-
-    .ctrl-btn {
-      padding: 10px 26px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: transparent;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
+    .cv-btn {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff;
+      border: 1px solid #999;
+      border-radius: 3px;
       cursor: pointer;
-      transition: all 0.15s;
-      color: var(--text);
+      color: #555;
+      line-height: 1;
     }
+    .cv-btn:hover { background: #f0f0f0; }
 
-    .ctrl-btn.start {
-      border-color: var(--green);
-      color: var(--green);
-    }
-    .ctrl-btn.start:hover { background: rgba(0,230,118,0.12); box-shadow: 0 0 14px rgba(0,230,118,0.2); }
-
-    .ctrl-btn.pause {
-      border-color: var(--amber);
-      color: var(--amber);
-    }
-    .ctrl-btn.pause:hover { background: rgba(255,171,0,0.12); box-shadow: 0 0 14px rgba(255,171,0,0.2); }
-
-    .ctrl-btn.stop {
-      border-color: var(--accent2);
-      color: var(--accent2);
-    }
-    .ctrl-btn.stop:hover { background: rgba(255,64,129,0.12); box-shadow: 0 0 14px rgba(255,64,129,0.2); }
-
-    .ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .ctrl-btn:active:not(:disabled) { transform: scale(0.95); }
-
-    /* Background glow overlay — green → yellow → red */
-    #bgGlow {
+    #toggle-btn {
       position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0;
-      transition: opacity 1.2s ease, background 1.5s ease;
-      background: radial-gradient(ellipse at center, rgba(0,180,80,0.30) 0%, rgba(0,100,40,0.15) 60%, transparent 100%);
+      bottom: 14px;
+      left: 14px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      background: #fff;
+      color: #000;
+      border: 1px solid #999;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
     }
-    #bgGlow.green  { background: radial-gradient(ellipse at center, rgba(0,200,90,0.28)  0%, rgba(0,100,40,0.13)  60%, transparent 100%); }
-    #bgGlow.yellow { background: radial-gradient(ellipse at center, rgba(220,180,0,0.35)  0%, rgba(140,100,0,0.18) 60%, transparent 100%); }
-    #bgGlow.red    { background: radial-gradient(ellipse at center, rgba(180,0,30,0.45)   0%, rgba(120,0,20,0.25)  60%, transparent 100%); }
-    #bgGlow.visible { opacity: 1; }
-
-    /* Done flash */
-    @keyframes flashDone {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    .time-text.done { animation: flashDone 0.8s ease-in-out infinite; }
-
-    /* Tick pulse on ring when running */
-    @keyframes ringPulse {
-      0%   { opacity: 1; }
-      50%  { opacity: 0.6; }
-      100% { opacity: 1; }
-    }
-    .ring-progress.running { animation: ringPulse 1s ease-in-out infinite; }
+    #toggle-btn:hover { background: #f0f0f0; }
   </style>
 </head>
 <body>
-<div id="bgGlow"></div>
-<div class="container">
-  <div class="label">Countdown Timer</div>
 
-  <div class="ring-wrap">
-    <svg width="380" height="380" viewBox="0 0 380 380">
-      <circle class="ring-bg" cx="190" cy="190" r="174"/>
-      <circle class="ring-progress" id="ring" cx="190" cy="190" r="174"
-              stroke-dasharray="1093.0" stroke-dashoffset="0"/>
-    </svg>
-    <div class="display">
-      <div class="time-text" id="timeDisplay">25:00</div>
-      <div class="status-badge" id="statusBadge">Ready</div>
-    </div>
-  </div>
-
-  <div class="adjust-panel">
-    <div class="adjust-group">
-      <div class="adjust-label">Minutes</div>
-      <div class="adjust-row">
-        <button class="adj-btn" id="minDown">−</button>
-        <div class="adj-val" id="minVal">25</div>
-        <button class="adj-btn" id="minUp">+</button>
-      </div>
-    </div>
-    <div class="adjust-group">
-      <div class="adjust-label">Seconds</div>
-      <div class="adjust-row">
-        <button class="adj-btn" id="secDown">−</button>
-        <div class="adj-val" id="secVal">00</div>
-        <button class="adj-btn" id="secUp">+</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="controls">
-    <button class="ctrl-btn start" id="btnStart">Start</button>
-    <button class="ctrl-btn pause" id="btnPause" disabled>Pause</button>
-    <button class="ctrl-btn stop"  id="btnStop"  disabled>Reset</button>
-  </div>
-</div>
+<div id="word-container"></div>
+<button id="toggle-btn">3 letters</button>
 
 <script>
-  const CIRC = 2 * Math.PI * 174; // ~1093.0
-  const MAX_SECONDS = 60 * 60;
+  const VOWELS     = ['A','E','I','O','U'];
+  const CONSONANTS = ['B','C','D','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','X','Y','Z'];
+  const ALL        = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-  let totalSeconds = 25 * 60;
-  let remaining   = totalSeconds;
-  let interval    = null;
-  let state       = 'idle'; // idle | running | paused | done
+  let numLetters = 3;
+  // Each entry: { mode: 'all'|'v'|'c', idx: index within current set }
+  let cols = [];
 
-  const timeDisplay = document.getElementById('timeDisplay');
-  const statusBadge = document.getElementById('statusBadge');
-  const ring        = document.getElementById('ring');
-  const minVal      = document.getElementById('minVal');
-  const secVal      = document.getElementById('secVal');
-  const btnStart    = document.getElementById('btnStart');
-  const btnPause    = document.getElementById('btnPause');
-  const btnStop     = document.getElementById('btnStop');
-
-  function pad(n) { return String(n).padStart(2, '0'); }
-
-  function formatTime(s) {
-    const neg = s < 0;
-    const abs = Math.abs(s);
-    const m = Math.floor(abs / 60);
-    const sec = abs % 60;
-    return `${neg ? '\u2212' : ''}${pad(m)}:${pad(sec)}`;
+  function currentSet(mode) {
+    if (mode === 'v') return VOWELS;
+    if (mode === 'c') return CONSONANTS;
+    return ALL;
   }
 
-  function updateDisplay() {
-    timeDisplay.textContent = formatTime(remaining);
-    // Adjust panel shows 0:00 once we go negative
-    const display = Math.max(0, remaining);
-    minVal.textContent = pad(Math.floor(display / 60));
-    secVal.textContent = pad(display % 60);
-    // Ring stays fully empty once we pass zero
-    const fraction = totalSeconds > 0 ? Math.max(0, remaining) / totalSeconds : 0;
-    ring.style.strokeDashoffset = CIRC * (1 - fraction);
+  function initCols(n) {
+    cols = Array.from({length: n}, () => ({ mode: 'c', idx: 0 }));
   }
 
-  const bgGlow = document.getElementById('bgGlow');
+  function advance(i, dir) {
+    const set = currentSet(cols[i].mode);
+    cols[i].idx = (cols[i].idx + dir + set.length) % set.length;
+    render();
+  }
 
-  function updateBgGlow() {
-    if (state === 'idle') {
-      bgGlow.classList.remove('visible', 'green', 'yellow', 'red');
-      return;
-    }
-    if (state === 'done' || state === 'stopped') {
-      bgGlow.classList.remove('green', 'yellow');
-      bgGlow.classList.add('red', 'visible');
-      return;
-    }
-    // running or paused — pick color based on remaining time
-    bgGlow.classList.add('visible');
-    if (remaining <= totalSeconds * 0.2) { // 20% or less → yellow
-      bgGlow.classList.remove('green', 'red');
-      bgGlow.classList.add('yellow');
+  function toggleCV(i) {
+    if (cols[i].mode === 'v') {
+      cols[i].mode = 'c';
+      cols[i].idx = 0; // first consonant: B
     } else {
-      bgGlow.classList.remove('yellow', 'red');
-      bgGlow.classList.add('green');
+      cols[i].mode = 'v';
+      cols[i].idx = 0; // first vowel: A
     }
+    render();
   }
 
-  function setVisualState(s) {
-    timeDisplay.className = 'time-text ' + (s !== 'idle' ? s : '');
-    statusBadge.className = 'status-badge ' + (s !== 'idle' ? s : '');
-    ring.className        = 'ring-progress ' + (s === 'running' ? 'running' : '');
+  function render() {
+    const container = document.getElementById('word-container');
+    container.innerHTML = '';
 
-    const labels = { idle: 'Ready', running: 'Running', paused: 'Paused', done: 'Done', stopped: 'Ended' };
-    statusBadge.textContent = labels[s];
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const fontSize = Math.min(
+      Math.floor(vw / (numLetters * 0.72)),
+      Math.floor(vh * 0.55)
+    );
+    const cvSize   = Math.max(10, Math.floor(fontSize * 0.13));
+    const arrowSize = Math.floor(fontSize * 0.38);
 
-    const ringColor = { idle: '#00e5ff', running: '#00e676', paused: '#ffab00', done: '#ff4081', stopped: '#ff4081' };
-    ring.style.stroke = ringColor[s];
-    ring.style.filter = `drop-shadow(0 0 8px ${ringColor[s]}99)`;
+    cols.forEach((col, i) => {
+      const set    = currentSet(col.mode);
+      const letter = set[col.idx];
 
-    updateBgGlow();
+      const colEl = document.createElement('div');
+      colEl.className = 'letter-col';
+
+      // Up arrow
+      const upZone = document.createElement('div');
+      upZone.className = 'btn-zone';
+      upZone.style.fontSize = arrowSize + 'px';
+      upZone.style.width    = fontSize * 0.72 + 'px';
+      upZone.style.height   = fontSize * 0.26 + 'px';
+      upZone.textContent    = '▲';
+      upZone.addEventListener('click', () => advance(i, 1));
+
+      // Letter
+      const letterDiv = document.createElement('div');
+      letterDiv.className    = 'letter-display';
+      letterDiv.style.fontSize = fontSize + 'px';
+      letterDiv.textContent  = letter;
+
+      // Down arrow
+      const downZone = document.createElement('div');
+      downZone.className = 'btn-zone';
+      downZone.style.fontSize = arrowSize + 'px';
+      downZone.style.width    = fontSize * 0.72 + 'px';
+      downZone.style.height   = fontSize * 0.26 + 'px';
+      downZone.textContent    = '▼';
+      downZone.addEventListener('click', () => advance(i, -1));
+
+      // C/V toggle button
+      const cvBtn = document.createElement('button');
+      cvBtn.className = 'cv-btn';
+      cvBtn.style.fontSize  = cvSize + 'px';
+      cvBtn.style.marginTop = Math.floor(fontSize * 0.06) + 'px';
+      cvBtn.style.padding   = Math.floor(cvSize * 0.3) + 'px ' + Math.floor(cvSize * 0.55) + 'px';
+      cvBtn.textContent     = col.mode === 'v' ? 'v' : 'c';
+      cvBtn.addEventListener('click', () => toggleCV(i));
+
+      colEl.appendChild(upZone);
+      colEl.appendChild(letterDiv);
+      colEl.appendChild(downZone);
+      colEl.appendChild(cvBtn);
+      container.appendChild(colEl);
+    });
   }
 
-  function setButtons() {
-    const canAdjust = state === 'idle';
-    btnStart.disabled = state === 'running' || state === 'done' || state === 'stopped';
-    btnPause.disabled = state !== 'running' && state !== 'done';
-    btnStop.disabled  = state === 'idle';
-    document.getElementById('minDown').disabled = !canAdjust;
-    document.getElementById('minUp').disabled   = !canAdjust;
-    document.getElementById('secDown').disabled = !canAdjust;
-    document.getElementById('secUp').disabled   = !canAdjust;
-
-    btnStart.textContent = state === 'paused' ? 'Resume' : 'Start';
-  }
-
-  function clampSeconds(s) { return Math.max(0, Math.min(MAX_SECONDS, s)); }
-
-  function adjustTime(delta) {
-    if (state !== 'idle') return;
-    totalSeconds = clampSeconds(totalSeconds + delta);
-    remaining    = totalSeconds;
-    updateDisplay();
-  }
-
-  document.getElementById('minUp').addEventListener('click',   () => adjustTime(60));
-  document.getElementById('minDown').addEventListener('click', () => adjustTime(-60));
-  document.getElementById('secUp').addEventListener('click',   () => adjustTime(1));
-  document.getElementById('secDown').addEventListener('click', () => adjustTime(-1));
-
-  btnStart.addEventListener('click', () => {
-    if (state === 'idle' && remaining === 0) return;
-    if (state === 'running' || state === 'done') return;
-
-    // If resuming after zero, stay in done visuals but keep ticking
-    const resumingNegative = remaining < 0;
-    state = resumingNegative ? 'done' : 'running';
-    setVisualState(state);
-    setButtons();
-
-    interval = setInterval(() => {
-      remaining--;
-      updateDisplay();
-      updateBgGlow();
-      if (remaining === 0) {
-        state = 'done';
-        setVisualState('done');
-        setButtons();
-      }
-      if (remaining <= -totalSeconds) {
-        clearInterval(interval);
-        interval = null;
-        state = 'stopped';
-        setVisualState('stopped');
-        setButtons();
-      }
-    }, 1000);
+  const toggleBtn = document.getElementById('toggle-btn');
+  toggleBtn.addEventListener('click', () => {
+    numLetters = (numLetters % 4) + 1;
+    toggleBtn.textContent = numLetters + ' letter' + (numLetters > 1 ? 's' : '');
+    initCols(numLetters);
+    render();
   });
 
-  btnPause.addEventListener('click', () => {
-    if (state !== 'running' && state !== 'done') return;
-    clearInterval(interval);
-    interval = null;
-    state = 'paused';
-    setVisualState('paused');
-    setButtons();
-  });
+  window.addEventListener('resize', render);
 
-  btnStop.addEventListener('click', () => {
-    clearInterval(interval);
-    interval = null;
-    remaining = totalSeconds;
-    state = 'idle';
-    setVisualState('idle');
-    updateDisplay();
-    setButtons();
-  });
-
-  // Init
-  ring.style.strokeDasharray = CIRC;
-  updateDisplay();
-  setVisualState('idle');
-  setButtons();
+  initCols(numLetters);
+  render();
 </script>
 </body>
 </html>
