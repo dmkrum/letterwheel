@@ -144,7 +144,7 @@
       upZone.style.width    = fontSize * 0.72 + 'px';
       upZone.style.height   = fontSize * 0.26 + 'px';
       upZone.textContent    = '▲';
-      upZone.addEventListener('click', () => advance(i, 1));
+      upZone.addEventListener('click', () => advance(i, -1));
 
       // Letter
       const letterDiv = document.createElement('div');
@@ -159,7 +159,7 @@
       downZone.style.width    = fontSize * 0.72 + 'px';
       downZone.style.height   = fontSize * 0.26 + 'px';
       downZone.textContent    = '▼';
-      downZone.addEventListener('click', () => advance(i, -1));
+      downZone.addEventListener('click', () => advance(i, 1));
 
       // C/V toggle button
       const cvBtn = document.createElement('button');
@@ -180,7 +180,7 @@
 
   const toggleBtn = document.getElementById('toggle-btn');
   toggleBtn.addEventListener('click', () => {
-    numLetters = (numLetters % 4) + 1;
+    numLetters = (numLetters % 5) + 1;
     toggleBtn.textContent = numLetters + ' letter' + (numLetters > 1 ? 's' : '');
     initCols(numLetters);
     render();
